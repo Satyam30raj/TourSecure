@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geo-Fencing Safety App</title>
+    
+    <!-- Load Leaflet and Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-draw/1.0.4/leaflet.draw.css" />
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load Leaflet and Leaflet Draw JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-draw/1.0.4/leaflet.draw.js"></script>
+    
+    <!-- Load Leaflet Heatmap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0d1117; /* Dark background */
+            background-image: linear-gradient(rgba(20, 25, 30, 0.7), rgba(20, 25, 30, 0.7)), url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9e9e' fill-opacity='0.05' transform='translate(-6 -5)'%3E%3Cpath d='M36.183 36.183l-2.071 2.071 2.071-2.071zm-2.071 2.071l-1.414 1.414 1.414-1.414zm3.485 1.414L34.116 34.116l1.414 1.414zM32.6 37.6l1.414 1.414-1.414-1.414zm4.242 0l1.414 1.414-1.414-1.414zM38.336 34.116l1.414 1.414-1.414-1.414zM32.6 32.6l1.414 1.414-1.414-1.414zm4.242 0l1.414 1.414-1.414-1.414zM30.485 34.116l1.414 1.414-1.414-1.414zM36.183 30.485l1.414 1.414-1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .leaflet-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        .animate-pulse {
+            animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .leaflet-tooltip.tourist-id-label {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: bold;
+            color: #1a202c; /* Change to a darker color for the light map */
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px white;
+        }
+
+        .glowing-text {
+            text-shadow: 0 0 5px #00FFFF, 0 0 10px #00FFFF;
+        }
+        .glow-border {
+            box-shadow: 0 0 10px #00FFFF;
+        }
+        .glow-pulse {
+            animation: glow-pulse 2s infinite;
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff; }
+            50% { box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff; }
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans text-gray-200 p-4">
+
+<div class="max-w-7xl mx-auto bg-gray-900 p-6 rounded-xl shadow-lg glow-border">
+    
+    <!-- Updated Heading -->
+    <h1 class="text-3xl font-bold text-center mb-6 text-gray-200">
+        Geo-Fencing Safety App
+    </h1>
+
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-gray-700 mb-6">
+        <button id="tab-admin" class="py-2 px-4 rounded-t-lg font-bold transition duration-300 bg-slate-900 text-cyan-400 glow-border">
+            Admin View
+        </button>
+        <button id="tab-tracking" class="py-2 px-4 rounded-t-lg font-bold transition duration-300 bg-gray-800 text-gray-400 hover:bg-gray-700">
+            Tourist Tracking
+        </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="tab-content">
+        <!-- Admin View Tab -->
+        <div id="admin-view" class="flex flex-col lg:flex-row gap-6">
+            <div class="w-full lg:w-1/2 h-[600px] rounded-xl overflow-hidden shadow-inner">
+                <div id="admin-map" class="w-full h-full"></div>
+            </div>
+            
+            <div class="w-full lg:w-1/4 bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
+                <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">Tourist Status</h2>
+                <div id="tourist-status-list" class="flex-1 overflow-y-auto pr-2">
+                    <p class="text-center text-gray-500">No tourists selected.</p>
+                </div>
+            </div>
+            
+            <div class="w-full lg:w-1/4 bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
+                <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">Location Logs</h2>
+                <div id="log-list" class="flex-1 overflow-y-auto pr-2">
+                    <p class="text-center text-gray-500">No logs yet.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tourist Tracking Tab -->
+        <div id="tourist-tracking-view" class="hidden">
+            <div class="w-full bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border mb-6">
+                <h2 class="text-2xl font-bold mb-4 text-center text-red-400">Alerts</h2>
+                <div id="alert-list" class="flex-1 overflow-y-auto pr-2">
+                    <p class="text-center text-gray-500">No alerts.</p>
+                </div>
+            </div>
+            <div class="w-full bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
+                <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">All Tourists</h2>
+                <div id="all-tourist-list" class="flex-1 overflow-y-auto pr-2">
+                    <p class="text-center text-gray-500">No tourists.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Panel -->
+    <div class="mt-6 p-6 bg-slate-900 rounded-xl shadow-inner glow-border">
+        <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">Search Tourist Location</h2>
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <input type="text" id="simulated-id" class="flex-1 p-2 rounded-lg border border-cyan-400 bg-gray-800 focus:outline-none focus:ring-2 focus:ring-cyan-400 placeholder-gray-500" placeholder="Enter Tourist ID">
+            <button id="search-tourist-btn" class="py-2 px-6 rounded-lg font-bold transition duration-300 bg-cyan-600 text-white hover:bg-cyan-700">Search</button>
+        </div>
+        <div class="mt-4 text-center text-sm text-gray-400">
+            Search for a tourist to view their location and history on the map.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fix for default Leaflet icon not showing
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    });
+
+    // Create custom icons for tourists
+    const touristIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const dangerIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    let adminMap, drawControl, featureGroup;
+    let touristStatus = {};
+    let touristLocationTraces = {};
+    let heatData = [];
+    let heatLayer = null;
+    let regularMonitoringTimer = null;
+    let searchedTouristId = null;
+
+    // UI elements
+    const tabAdmin = document.getElementById('tab-admin');
+    const tabTracking = document.getElementById('tab-tracking');
+    const viewAdmin = document.getElementById('admin-view');
+    const viewTracking = document.getElementById('tourist-tracking-view');
+    const touristStatusList = document.getElementById('tourist-status-list');
+    const allTouristList = document.getElementById('all-tourist-list');
+    const alertList = document.getElementById('alert-list');
+    const logList = document.getElementById('log-list');
+    const simulatedIdInput = document.getElementById('simulated-id');
+    const searchBtn = document.getElementById('search-tourist-btn');
+
+    const prewrittenTourists = [
+        { id: 'T-101', lat: 26.12, lng: 91.75 },
+        { id: 'T-102', lat: 26.25, lng: 91.70 },
+        { id: 'T-103', lat: 26.35, lng: 94.20 },
+        { id: 'T-104', lat: 26.60, lng: 93.30 },
+        { id: 'T-105', lat: 26.80, lng: 94.00 },
+        { id: 'T-106', lat: 26.15, lng: 91.85 },
+        { id: 'T-107', lat: 26.90, lng: 94.60 },
+        { id: 'T-108', lat: 26.30, lng: 91.55 }
+    ];
+
+    // --- UTILITY FUNCTIONS ---
+    
+    // Function to check if a point is inside a polygon
+    function isPointInPolygon(point, polygon) {
+        const x = point.lat, y = point.lng;
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].lat, yi = polygon[i].lng;
+            const xj = polygon[j].lat, yj = polygon[j].lng;
+            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    // Function to check if a point is inside a circle
+    function isPointInCircle(point, center, radius) {
+        const distance = adminMap.distance(point, center);
+        return distance <= radius;
+    }
+
+    // Function to get zone status for a given point
+    function getZoneStatus(point) {
+        let isInsideSafeZone = false;
+        let isInsideDangerZone = false;
+        
+        const storedZones = predefinedZones || {};
+        for (const zoneId in storedZones) {
+            const zone = storedZones[zoneId];
+            if (zone.type === 'polygon') {
+                const geoData = JSON.parse(zone.data);
+                const coordinates = geoData.geometry.coordinates[0].map(c => ({ lat: c[1], lng: c[0] }));
+                if (isPointInPolygon(point, coordinates)) {
+                    if (geoData.properties.threatLevel === 'high') {
+                        isInsideDangerZone = true;
+                    } else {
+                        isInsideSafeZone = true;
+                    }
+                }
+            } else if (zone.type === 'circle') {
+                const geoData = JSON.parse(zone.data);
+                const center = L.latLng(geoData.coordinates[1], geoData.coordinates[0]);
+                const radius = geoData.radius;
+                if (isPointInCircle(point, center, radius)) {
+                    if (geoData.properties.threatLevel === 'high' || geoData.properties.threatLevel === 'moderate') {
+                        isInsideDangerZone = true;
+                    } else {
+                        isInsideSafeZone = true;
+                    }
+                }
+            }
+        }
+        
+        if (isInsideDangerZone) {
+            return 'danger';
+        }
+        if (isInsideSafeZone) {
+            return 'inside';
+        }
+        return 'outside';
+    }
+    
+    // --- ADMIN VIEW FUNCTIONS ---
+    
+    function setupAdminMap() {
+        if (!adminMap) {
+            adminMap = L.map('admin-map').setView([26.2006, 92.9376], 9);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(adminMap);
+            
+            featureGroup = new L.FeatureGroup().addTo(adminMap);
+
+            try {
+                drawControl = new L.Control.Draw({
+                    edit: { featureGroup: featureGroup },
+                    draw: {
+                        polygon: { shapeOptions: { color: '#ff00ff', fillColor: '#ff00ff' } },
+                        circle: { shapeOptions: { color: '#00ffff', fillColor: '#00ffff' } },
+                        rectangle: false, marker: false, circlemarker: false, polyline: false,
+                    }
+                });
+                adminMap.addControl(drawControl);
+
+                adminMap.on(L.Draw.Event.CREATED, function (e) {
+                    const layer = e.layer;
+                    let type = e.layerType;
+                    let geoData;
+                    let threatLevel = 'safe';
+
+                    if (type === 'polygon') {
+                        geoData = layer.toGeoJSON();
+                        threatLevel = 'high';
+                        layer.setStyle({ color: '#e53e3e', fillColor: '#e53e3e' });
+                    } else if (type === 'circle') {
+                        const radius = layer.getRadius();
+                        threatLevel = (radius > 500) ? 'high' : 'moderate';
+                        const color = (threatLevel === 'high') ? '#e53e3e' : '#f6ad55';
+                        layer.setStyle({ color: color, fillColor: color });
+                        geoData = {
+                            type: "Circle",
+                            properties: { threatLevel: threatLevel },
+                            coordinates: [layer.getLatLng().lng, layer.getLatLng().lat],
+                            radius: radius
+                        };
+                    }
+                    
+                    const zoneId = Date.now().toString();
+                    const newZone = { id: zoneId, type: type, data: JSON.stringify(geoData) };
+                    predefinedZones[zoneId] = newZone;
+                    layer.id = zoneId;
+                    featureGroup.addLayer(layer);
+                    addLogEntry(`A new ${threatLevel} ${type} zone has been created. (Note: This is not persistent)`, 'info');
+                });
+                
+                adminMap.on(L.Draw.Event.DELETED, function (e) {
+                    const layers = e.layers;
+                    layers.eachLayer(function (layer) {
+                        delete predefinedZones[layer.id];
+                        addLogEntry(`A zone has been deleted. (Note: This is not persistent)`, 'info');
+                    });
+                });
+
+            } catch(e) {
+                console.warn("Leaflet Draw library or its event object is not fully available. Some features may not work.");
+            }
+        }
+    }
+    
+    const predefinedZones = {
+        'brahmaputra-flood-1': { id: 'brahmaputra-flood-1', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Brahmaputra Flood Zone", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[91.73, 26.21], [91.80, 26.15], [91.90, 26.18], [91.83, 26.24], [91.73, 26.21]]] }}) },
+        'kaziranga-park-2': { id: 'kaziranga-park-2', type: 'circle', data: JSON.stringify({ type: "Circle", properties: { name: "Kaziranga National Park", threatLevel: "moderate" }, coordinates: [93.37, 26.65], radius: 15000 }) },
+        'majuli-flood-3': { id: 'majuli-flood-3', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Majuli Flood Zone", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[94.01, 26.96], [94.12, 26.95], [94.10, 26.85], [93.98, 26.86], [94.01, 26.96]]] }}) },
+        'manas-park-4': { id: 'manas-park-4', type: 'circle', data: JSON.stringify({ type: "Circle", properties: { name: "Manas National Park", threatLevel: "moderate" }, coordinates: [91.01, 26.75], radius: 15000 }) },
+        'guwahati-city-5': { id: 'guwahati-city-5', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Guwahati City", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[91.70, 26.18], [91.75, 26.18], [91.75, 26.12], [91.70, 26.12], [91.70, 26.18]]] }}) },
+        'jorhat-tea-6': { id: 'jorhat-tea-6', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Jorhat Tea Plantations", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[94.18, 26.77], [94.24, 26.77], [94.24, 26.72], [94.18, 26.72], [94.18, 26.77]]] }}) },
+        'sivasagar-7': { id: 'sivasagar-7', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Sivasagar Historical Area", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[94.62, 26.99], [94.63, 26.98], [94.61, 26.96], [94.60, 26.97], [94.62, 26.99]]] }}) },
+        'hajo-8': { id: 'hajo-8', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Hajo Pilgrimage Center", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[91.56, 26.31], [91.58, 26.31], [91.58, 26.29], [91.56, 26.29], [91.56, 26.31]]] }}) },
+        'dibru-saikhowa-9': { id: 'dibru-saikhowa-9', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Dibru-Saikhowa National Park", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[95.20, 27.65], [95.25, 27.65], [95.25, 27.55], [95.20, 27.55], [95.20, 27.65]]] }}) },
+        'bhuban-pahar-10': { id: 'bhuban-pahar-10', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Bhuban Pahar", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[92.54, 24.89], [92.60, 24.87], [92.62, 24.82], [92.56, 24.80], [92.54, 24.89]]] }}) }
+    };
+
+    function loadZones() {
+        if (featureGroup) {
+            featureGroup.clearLayers();
+        }
+        Object.entries(predefinedZones).forEach(([id, zoneData]) => {
+            const type = zoneData.type;
+            const geoData = JSON.parse(zoneData.data);
+            
+            let layer;
+            if (type === 'polygon') {
+                const threatLevel = geoData.properties.threatLevel;
+                const color = (threatLevel === 'high') ? '#e53e3e' : '#00ffff';
+                layer = L.geoJSON(geoData, { style: { color: color, weight: 4, opacity: 0.5, fillColor: color, fillOpacity: 0.2 } });
+            } else if (type === 'circle') {
+                const threatLevel = geoData.properties.threatLevel;
+                const color = (threatLevel === 'high') ? '#e53e3e' : '#f6ad55';
+                layer = L.circle(L.latLng(geoData.coordinates[1], geoData.coordinates[0]), { radius: geoData.radius, color: color, fillColor: color, fillOpacity: 0.2 });
+            }
+            
+            if (layer) {
+                layer.id = id;
+                featureGroup.addLayer(layer);
+            }
+        });
+    }
+
+    // --- UI UPDATE FUNCTIONS ---
+
+    function updateTouristStatusList(touristId = null) {
+        const tourists = touristId ? [touristStatus[touristId]] : Object.values(touristStatus);
+        touristStatusList.innerHTML = '';
+        if (tourists.length === 0 || tourists[0] === undefined) {
+            touristStatusList.innerHTML = `<p class="text-center text-gray-500">No tourists selected.</p>`;
+            return;
+        }
+        
+        tourists.forEach(tourist => {
+            // New logic: "outside" is good (green), "inside" or "danger" is bad (red)
+            const isSafe = tourist.status === 'outside';
+            const statusColor = isSafe ? 'text-green-500' : 'text-red-500';
+            const bgColor = isSafe ? 'bg-green-900 border-l-4 border-green-500 animate-pulse' : 'bg-red-900 border-l-4 border-red-500 glow-pulse';
+            const statusText = tourist.status.toUpperCase();
+            
+            const statusHtml = `
+                <div class="p-4 mb-4 rounded-xl shadow-md transition duration-300 ${bgColor}">
+                    <p class="font-bold text-gray-200">
+                        ID: <span class="text-sm break-all">${tourist.id}</span>
+                    </p>
+                    <p class="font-semibold ${statusColor}">
+                        Status: ${statusText}
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        Last Update: ${new Date().toLocaleTimeString()}
+                    </p>
+                </div>
+            `;
+            touristStatusList.innerHTML += statusHtml;
+        });
+    }
+
+    function updateAllTouristList() {
+        const tourists = Object.values(touristStatus);
+        allTouristList.innerHTML = '';
+        if (tourists.length === 0) {
+            allTouristList.innerHTML = `<p class="text-center text-gray-500">No tourists.</p>`;
+        } else {
+            tourists.forEach(tourist => {
+                // New logic: "outside" is good (green), "inside" or "danger" is bad (red)
+                const isSafe = tourist.status === 'outside';
+                const bgColor = isSafe ? 'bg-green-900 border-l-4 border-green-500' : 'bg-red-900 border-l-4 border-red-500';
+                const statusText = tourist.status.toUpperCase();
+                
+                const statusHtml = `
+                    <div class="p-4 mb-4 rounded-xl shadow-md ${bgColor}">
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-6 h-6 ${isSafe ? 'text-green-400' : 'text-red-400'}" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                            <p class="font-bold text-gray-200">ID: <span class="text-sm break-all">${tourist.id}</span></p>
+                        </div>
+                        <p class="font-semibold mt-2 text-white">Status: ${statusText}</p>
+                    </div>
+                `;
+                allTouristList.innerHTML += statusHtml;
+            });
+        }
+    }
+
+    function addAlert(touristId) {
+        const timestamp = new Date().toLocaleTimeString();
+        const alertHtml = `
+            <div class="p-4 mb-4 rounded-xl shadow-md bg-red-900 border-l-4 border-red-500 animate-pulse">
+                <p class="font-bold text-red-400">ALERT: Tourist in Danger Zone!</p>
+                <p class="text-sm text-white">Tourist ID: ${touristId}</p>
+                <p class="text-xs text-gray-400">Timestamp: ${timestamp}</p>
+            </div>
+        `;
+        if (alertList.innerHTML.includes("No alerts.")) {
+            alertList.innerHTML = '';
+        }
+        alertList.innerHTML += alertHtml;
+        alertList.scrollTop = alertList.scrollHeight;
+    }
+    
+    function addLogEntry(message, type) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logHtml = `
+            <div class="p-2 mb-2 rounded-lg text-sm ${type === 'error' ? 'bg-red-800 text-red-200' : 'bg-gray-800 text-gray-200'}">
+                <span class="font-mono text-xs text-gray-500">[${timestamp}]</span> ${message}
+            </div>
+        `;
+        if (logList.innerHTML.includes("No logs yet.")) {
+            logList.innerHTML = '';
+        }
+        logList.innerHTML += logHtml;
+        logList.scrollTop = logList.scrollHeight;
+    }
+    
+    // --- SIMULATION LOGIC ---
+
+    function updateTourist(data, updateMap = false) {
+        const oldStatus = touristStatus[data.id] ? touristStatus[data.id].status : null;
+        touristStatus[data.id] = data;
+        
+        if (searchedTouristId) {
+            updateTouristStatusList(searchedTouristId);
+        }
+
+        updateAllTouristList();
+        
+        const isNewTourist = oldStatus === null;
+        if (isNewTourist) {
+            addLogEntry(`New tourist detected: ${data.id.substring(0, 8)}...`, 'info');
+        } else if (oldStatus !== data.status) {
+            addLogEntry(`Tourist ${data.id.substring(0, 8)}... is now ${data.status.toUpperCase()}.`, data.status === 'outside' || data.status === 'danger' ? 'error' : 'info');
+            if (data.status === 'danger') {
+                addAlert(data.id);
+            }
+        }
+        
+        // This is the core fix. We only update the map if it's the searched tourist.
+        if (updateMap && data.id === searchedTouristId) {
+            if (adminMap && data.lat && data.lng) {
+                const currentPosition = [data.lat, data.lng];
+                
+                heatData.push(currentPosition);
+                if (!heatLayer) {
+                    heatLayer = L.heatLayer(heatData, { radius: 25, maxZoom: 14 }).addTo(adminMap);
+                } else {
+                    heatLayer.setLatLngs(heatData);
+                }
+                
+                if (!touristLocationTraces[data.id]) {
+                    const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+                    touristLocationTraces[data.id] = L.polyline([], { color: color }).addTo(adminMap);
+                }
+                touristLocationTraces[data.id].addLatLng(currentPosition);
+
+                let existingMarker = null;
+                adminMap.eachLayer(layer => {
+                    if (layer instanceof L.Marker && layer.touristId === data.id) {
+                        existingMarker = layer;
+                    }
+                });
+
+                const currentIcon = data.status === 'outside' || data.status === 'danger' ? dangerIcon : touristIcon;
+
+                if (existingMarker) {
+                    existingMarker.setLatLng(currentPosition);
+                    existingMarker.setIcon(currentIcon);
+                    existingMarker.setPopupContent(`Tourist ID: ${data.id}<br>Status: ${data.status.toUpperCase()}`);
+                    existingMarker.getTooltip().setContent(data.id);
+                } else {
+                    const marker = new L.marker(currentPosition, { icon: currentIcon }).addTo(adminMap);
+                    marker.touristId = data.id;
+                    marker.bindPopup(`Tourist ID: ${data.id}<br>Status: ${data.status.toUpperCase()}`);
+                    marker.bindTooltip(data.id, { permanent: true, direction: 'top', className: 'tourist-id-label' }).openTooltip();
+                }
+                // FIXED: Use panTo to move the map without changing the zoom level
+                adminMap.panTo(currentPosition);
+            }
+        }
+    }
+
+    function startRegularMonitoring() {
+        if (regularMonitoringTimer) return;
+        
+        prewrittenTourists.forEach(tourist => {
+            const initialStatus = getZoneStatus(L.latLng(tourist.lat, tourist.lng));
+            updateTourist({ ...tourist, status: initialStatus });
+        });
+
+        regularMonitoringTimer = setInterval(() => {
+            Object.keys(touristStatus).forEach(id => {
+                const tourist = touristStatus[id];
+                // Only move the prewritten tourists
+                if (prewrittenTourists.some(t => t.id === tourist.id)) {
+                    const latOffset = (Math.random() - 0.5) * 0.01;
+                    const lngOffset = (Math.random() - 0.5) * 0.01;
+                    const newLat = tourist.lat + latOffset;
+                    const newLng = tourist.lng + lngOffset;
+                    sendLocation({ id: tourist.id, lat: newLat, lng: newLng });
+                    
+                    // NEW: If a tourist is being searched, update the map for them.
+                    if (id === searchedTouristId) {
+                         updateTourist(touristStatus[id], true);
+                    }
+                }
+            });
+        }, 3000);
+    }
+
+    function sendLocation(data) {
+        const status = getZoneStatus(L.latLng(data.lat, data.lng));
+        const newData = { ...data, status: status };
+        updateTourist(newData, false);
+    }
+
+    function searchTourist() {
+        searchedTouristId = simulatedIdInput.value.trim();
+        if (!searchedTouristId) {
+            addLogEntry("Please enter a tourist ID.", 'error');
+            return;
+        }
+
+        const touristData = touristStatus[searchedTouristId];
+        if (touristData) {
+            // Clear previous search display
+            if (touristLocationTraces[searchedTouristId]) {
+                 touristLocationTraces[searchedTouristId].removeFrom(adminMap);
+                 delete touristLocationTraces[searchedTouristId];
+            }
+            if (heatLayer) {
+                 heatData = [];
+                 heatLayer.setLatLngs(heatData);
+            }
+            
+            adminMap.eachLayer(layer => {
+                 if (layer instanceof L.Marker && layer.touristId === searchedTouristId) {
+                    adminMap.removeLayer(layer);
+                 }
+            });
+
+            addLogEntry(`Displaying location for tourist: ${searchedTouristId}.`, 'info');
+            updateTourist(touristData, true); // Update map
+        } else {
+            addLogEntry(`Tourist with ID '${searchedTouristId}' not found.`, 'error');
+        }
+    }
+
+    function switchTab(tabName) {
+        if (tabName === 'admin') {
+            viewAdmin.classList.remove('hidden');
+            viewTracking.classList.add('hidden');
+            tabAdmin.classList.add('bg-slate-900', 'text-cyan-400', 'glow-border');
+            tabAdmin.classList.remove('bg-gray-800', 'text-gray-400');
+            tabTracking.classList.add('bg-gray-800', 'text-gray-400');
+            tabTracking.classList.remove('bg-slate-900', 'text-cyan-400', 'glow-border');
+        } else {
+            viewAdmin.classList.add('hidden');
+            viewTracking.classList.remove('hidden');
+            tabTracking.classList.add('bg-slate-900', 'text-cyan-400', 'glow-border');
+            tabTracking.classList.remove('bg-gray-800', 'text-gray-400');
+            tabAdmin.classList.add('bg-gray-800', 'text-gray-400');
+            tabAdmin.classList.remove('bg-slate-900', 'text-cyan-400', 'glow-border');
+        }
+    }
+
+    window.onload = function() {
+        setupAdminMap();
+        loadZones();
+        startRegularMonitoring();
+
+        searchBtn.addEventListener('click', searchTourist);
+        tabAdmin.addEventListener('click', () => switchTab('admin'));
+        tabTracking.addEventListener('click', () => switchTab('tracking'));
+        
+    };
+</script>
+
+</body>
+</html>
