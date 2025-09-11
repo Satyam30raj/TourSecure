@@ -94,6 +94,15 @@
             
             <div class="w-full lg:w-1/4 bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
                 <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">Tourist Status</h2>
+                
+                <!-- New AI Guidance Panel -->
+                <div id="guidance-panel" class="mb-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2 text-cyan-300">AI Guidance ✨</h3>
+                    <div id="guidance-content" class="p-3 bg-gray-800 rounded-lg text-sm text-gray-300 italic">
+                        The AI will provide information here.
+                    </div>
+                </div>
+
                 <div id="tourist-status-list" class="flex-1 overflow-y-auto pr-2">
                     <p class="text-center text-gray-500">No tourists selected.</p>
                 </div>
@@ -108,17 +117,23 @@
         </div>
 
         <!-- Tourist Tracking Tab -->
-        <div id="tourist-tracking-view" class="hidden">
-            <div class="w-full bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border mb-6">
-                <h2 class="text-2xl font-bold mb-4 text-center text-red-400">Alerts</h2>
-                <div id="alert-list" class="flex-1 overflow-y-auto pr-2">
-                    <p class="text-center text-gray-500">No alerts.</p>
-                </div>
+        <div id="tourist-tracking-view" class="hidden flex flex-col lg:flex-row gap-6">
+            <div class="w-full lg:w-1/2 h-[600px] rounded-xl overflow-hidden shadow-inner">
+                <!-- NEW: Map for live tracking all tourists -->
+                <div id="tracking-map" class="w-full h-full"></div>
             </div>
-            <div class="w-full bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
-                <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">All Tourists</h2>
-                <div id="all-tourist-list" class="flex-1 overflow-y-auto pr-2">
-                    <p class="text-center text-gray-500">No tourists.</p>
+            <div class="w-full lg:w-1/2 flex flex-col gap-6">
+                <div class="bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
+                    <h2 class="text-2xl font-bold mb-4 text-center text-red-400">Alerts</h2>
+                    <div id="alert-list" class="flex-1 overflow-y-auto pr-2">
+                        <p class="text-center text-gray-500">No alerts.</p>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl shadow-inner flex flex-col glow-border">
+                    <h2 class="text-2xl font-bold mb-4 text-center text-cyan-400">All Tourists</h2>
+                    <div id="all-tourist-list" class="flex-1 overflow-y-auto pr-2">
+                        <p class="text-center text-gray-500">No tourists.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -165,7 +180,8 @@
         shadowSize: [41, 41]
     });
 
-    let adminMap, drawControl, featureGroup;
+    let adminMap, drawControl, featureGroup, trackingMap;
+    let trackingMarkers = {}; // Object to hold markers for the tracking map
     let touristStatus = {};
     let touristLocationTraces = {};
     let heatData = [];
@@ -184,7 +200,22 @@
     const logList = document.getElementById('log-list');
     const simulatedIdInput = document.getElementById('simulated-id');
     const searchBtn = document.getElementById('search-tourist-btn');
+    const guidancePanel = document.getElementById('guidance-panel');
+    const guidanceContent = document.getElementById('guidance-content');
 
+    const predefinedZones = {
+        'brahmaputra-flood-1': { id: 'brahmaputra-flood-1', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Brahmaputra Flood Zone", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[91.73, 26.21], [91.80, 26.15], [91.90, 26.18], [91.83, 26.24], [91.73, 26.21]]] }}) },
+        'kaziranga-park-2': { id: 'kaziranga-park-2', type: 'circle', data: JSON.stringify({ type: "Circle", properties: { name: "Kaziranga National Park", threatLevel: "moderate" }, coordinates: [93.37, 26.65], radius: 15000 }) },
+        'majuli-flood-3': { id: 'majuli-flood-3', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Majuli Flood Zone", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[94.01, 26.96], [94.12, 26.95], [94.10, 26.85], [93.98, 26.86], [94.01, 26.96]]] }}) },
+        'manas-park-4': { id: 'manas-park-4', type: 'circle', data: JSON.stringify({ type: "Circle", properties: { name: "Manas National Park", threatLevel: "moderate" }, coordinates: [91.01, 26.75], radius: 15000 }) },
+        'guwahati-city-5': { id: 'guwahati-city-5', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Guwahati City", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[91.70, 26.18], [91.75, 26.18], [91.75, 26.12], [91.70, 26.12], [91.70, 26.18]]] }}) },
+        'jorhat-tea-6': { id: 'jorhat-tea-6', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Jorhat Tea Plantations", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[94.18, 26.77], [94.24, 26.77], [94.24, 26.72], [94.18, 26.72], [94.18, 26.77]]] }}) },
+        'sivasagar-7': { id: 'sivasagar-7', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Sivasagar Historical Area", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[94.62, 26.99], [94.63, 26.98], [94.61, 26.96], [94.60, 26.97], [94.62, 26.99]]] }}) },
+        'hajo-8': { id: 'hajo-8', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Hajo Pilgrimage Center", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[91.56, 26.31], [91.58, 26.31], [91.58, 26.29], [91.56, 26.29], [91.56, 26.31]]] }}) },
+        'dibru-saikhowa-9': { id: 'dibru-saikhowa-9', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Dibru-Saikhowa National Park", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[95.20, 27.65], [95.25, 27.65], [95.25, 27.55], [95.20, 27.55], [95.20, 27.65]]] }}) },
+        'bhuban-pahar-10': { id: 'bhuban-pahar-10', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Bhuban Pahar", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[92.54, 24.89], [92.60, 24.87], [92.62, 24.82], [92.56, 24.80], [92.54, 24.89]]] }}) }
+    };
+    
     const prewrittenTourists = [
         { id: 'T-101', lat: 26.12, lng: 91.75 },
         { id: 'T-102', lat: 26.25, lng: 91.70 },
@@ -221,14 +252,17 @@
     function getZoneStatus(point) {
         let isInsideSafeZone = false;
         let isInsideDangerZone = false;
+        let zoneName = "Uncategorized Area"; // Default name
         
         const storedZones = predefinedZones || {};
         for (const zoneId in storedZones) {
             const zone = storedZones[zoneId];
+            const geoData = JSON.parse(zone.data);
+            
             if (zone.type === 'polygon') {
-                const geoData = JSON.parse(zone.data);
                 const coordinates = geoData.geometry.coordinates[0].map(c => ({ lat: c[1], lng: c[0] }));
                 if (isPointInPolygon(point, coordinates)) {
+                    zoneName = geoData.properties.name;
                     if (geoData.properties.threatLevel === 'high') {
                         isInsideDangerZone = true;
                     } else {
@@ -236,10 +270,10 @@
                     }
                 }
             } else if (zone.type === 'circle') {
-                const geoData = JSON.parse(zone.data);
                 const center = L.latLng(geoData.coordinates[1], geoData.coordinates[0]);
                 const radius = geoData.radius;
                 if (isPointInCircle(point, center, radius)) {
+                    zoneName = geoData.properties.name;
                     if (geoData.properties.threatLevel === 'high' || geoData.properties.threatLevel === 'moderate') {
                         isInsideDangerZone = true;
                     } else {
@@ -250,14 +284,68 @@
         }
         
         if (isInsideDangerZone) {
-            return 'danger';
+            return { status: 'danger', name: zoneName, threatLevel: 'high' };
         }
         if (isInsideSafeZone) {
-            return 'inside';
+            return { status: 'inside', name: zoneName, threatLevel: 'safe' };
         }
-        return 'outside';
+        return { status: 'outside', name: 'Outside All Zones', threatLevel: 'safe' };
+    }
+
+    // --- GEMINI API INTEGRATION ---
+    async function generateLLMResponse(zoneName, threatLevel) {
+        guidanceContent.innerHTML = 'Thinking... <span class="animate-pulse">...</span>';
+        let prompt;
+
+        if (threatLevel === 'high' || threatLevel === 'moderate') {
+            prompt = `Generate a very concise and direct advisory message for an administrator. The message should state the potential risk of the "${zoneName}" area and suggest a proactive action the administrator could take if a tourist is nearby. Keep it under 25 words.`;
+        } else {
+            prompt = `Generate a brief, interesting historical or cultural fact about the "${zoneName}" area for a tourist. Keep it under 25 words.`;
+        }
+
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            model: "gemini-2.5-flash-preview-05-20"
+        };
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        let responseText = "Could not generate guidance. Please try again.";
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount < maxRetries) {
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                responseText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI.";
+                break; // Success, exit the loop
+            } catch (error) {
+                console.error("Fetch error:", error);
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    const delay = Math.pow(2, retryCount) * 1000;
+                    await new Promise(res => setTimeout(res, delay));
+                }
+            }
+        }
+        displayGuidance(responseText);
     }
     
+    function displayGuidance(message) {
+        guidancePanel.classList.remove('hidden');
+        guidanceContent.innerHTML = message;
+    }
+
     // --- ADMIN VIEW FUNCTIONS ---
     
     function setupAdminMap() {
@@ -297,7 +385,7 @@
                         layer.setStyle({ color: color, fillColor: color });
                         geoData = {
                             type: "Circle",
-                            properties: { threatLevel: threatLevel },
+                            properties: { threatLevel: threatLevel, name: "New Custom Zone" },
                             coordinates: [layer.getLatLng().lng, layer.getLatLng().lat],
                             radius: radius
                         };
@@ -325,19 +413,6 @@
         }
     }
     
-    const predefinedZones = {
-        'brahmaputra-flood-1': { id: 'brahmaputra-flood-1', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Brahmaputra Flood Zone", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[91.73, 26.21], [91.80, 26.15], [91.90, 26.18], [91.83, 26.24], [91.73, 26.21]]] }}) },
-        'kaziranga-park-2': { id: 'kaziranga-park-2', type: 'circle', data: JSON.stringify({ type: "Circle", properties: { name: "Kaziranga National Park", threatLevel: "moderate" }, coordinates: [93.37, 26.65], radius: 15000 }) },
-        'majuli-flood-3': { id: 'majuli-flood-3', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Majuli Flood Zone", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[94.01, 26.96], [94.12, 26.95], [94.10, 26.85], [93.98, 26.86], [94.01, 26.96]]] }}) },
-        'manas-park-4': { id: 'manas-park-4', type: 'circle', data: JSON.stringify({ type: "Circle", properties: { name: "Manas National Park", threatLevel: "moderate" }, coordinates: [91.01, 26.75], radius: 15000 }) },
-        'guwahati-city-5': { id: 'guwahati-city-5', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Guwahati City", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[91.70, 26.18], [91.75, 26.18], [91.75, 26.12], [91.70, 26.12], [91.70, 26.18]]] }}) },
-        'jorhat-tea-6': { id: 'jorhat-tea-6', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Jorhat Tea Plantations", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[94.18, 26.77], [94.24, 26.77], [94.24, 26.72], [94.18, 26.72], [94.18, 26.77]]] }}) },
-        'sivasagar-7': { id: 'sivasagar-7', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Sivasagar Historical Area", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[94.62, 26.99], [94.63, 26.98], [94.61, 26.96], [94.60, 26.97], [94.62, 26.99]]] }}) },
-        'hajo-8': { id: 'hajo-8', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Hajo Pilgrimage Center", threatLevel: "safe" }, geometry: { type: "Polygon", coordinates: [[[91.56, 26.31], [91.58, 26.31], [91.58, 26.29], [91.56, 26.29], [91.56, 26.31]]] }}) },
-        'dibru-saikhowa-9': { id: 'dibru-saikhowa-9', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Dibru-Saikhowa National Park", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[95.20, 27.65], [95.25, 27.65], [95.25, 27.55], [95.20, 27.55], [95.20, 27.65]]] }}) },
-        'bhuban-pahar-10': { id: 'bhuban-pahar-10', type: 'polygon', data: JSON.stringify({ type: "Feature", properties: { name: "Bhuban Pahar", threatLevel: "high" }, geometry: { type: "Polygon", coordinates: [[[92.54, 24.89], [92.60, 24.87], [92.62, 24.82], [92.56, 24.80], [92.54, 24.89]]] }}) }
-    };
-
     function loadZones() {
         if (featureGroup) {
             featureGroup.clearLayers();
@@ -376,25 +451,41 @@
         
         tourists.forEach(tourist => {
             // New logic: "outside" is good (green), "inside" or "danger" is bad (red)
-            const isSafe = tourist.status === 'outside';
+            const isSafe = tourist.status.status === 'outside';
             const statusColor = isSafe ? 'text-green-500' : 'text-red-500';
             const bgColor = isSafe ? 'bg-green-900 border-l-4 border-green-500 animate-pulse' : 'bg-red-900 border-l-4 border-red-500 glow-pulse';
-            const statusText = tourist.status.toUpperCase();
+            const statusText = tourist.status.status.toUpperCase();
             
             const statusHtml = `
                 <div class="p-4 mb-4 rounded-xl shadow-md transition duration-300 ${bgColor}">
                     <p class="font-bold text-gray-200">
                         ID: <span class="text-sm break-all">${tourist.id}</span>
                     </p>
-                    <p class="font-semibold ${statusColor}">
+                    <p class="text-sm text-gray-400 mt-1">
+                        Lat: ${tourist.lat.toFixed(4)}, Lng: ${tourist.lng.toFixed(4)}
+                    </p>
+                    <p class="font-semibold ${statusColor} mt-2">
                         Status: ${statusText}
                     </p>
                     <p class="text-sm text-gray-500">
                         Last Update: ${new Date().toLocaleTimeString()}
                     </p>
+                    <button class="mt-2 py-1 px-3 rounded-lg text-xs font-semibold bg-cyan-600 text-white hover:bg-cyan-700 get-info-btn" data-tourist-id="${tourist.id}">
+                        ✨ Get Zone Info ✨
+                    </button>
                 </div>
             `;
             touristStatusList.innerHTML += statusHtml;
+        });
+
+        document.querySelectorAll('.get-info-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const id = e.target.getAttribute('data-tourist-id');
+                const tourist = touristStatus[id];
+                if (tourist) {
+                    generateLLMResponse(tourist.status.name, tourist.status.threatLevel);
+                }
+            });
         });
     }
 
@@ -406,9 +497,9 @@
         } else {
             tourists.forEach(tourist => {
                 // New logic: "outside" is good (green), "inside" or "danger" is bad (red)
-                const isSafe = tourist.status === 'outside';
+                const isSafe = tourist.status.status === 'outside';
                 const bgColor = isSafe ? 'bg-green-900 border-l-4 border-green-500' : 'bg-red-900 border-l-4 border-red-500';
-                const statusText = tourist.status.toUpperCase();
+                const statusText = tourist.status.status.toUpperCase();
                 
                 const statusHtml = `
                     <div class="p-4 mb-4 rounded-xl shadow-md ${bgColor}">
@@ -457,7 +548,7 @@
     // --- SIMULATION LOGIC ---
 
     function updateTourist(data, updateMap = false) {
-        const oldStatus = touristStatus[data.id] ? touristStatus[data.id].status : null;
+        const oldStatus = touristStatus[data.id] ? touristStatus[data.id].status.status : null;
         touristStatus[data.id] = data;
         
         if (searchedTouristId) {
@@ -469,10 +560,12 @@
         const isNewTourist = oldStatus === null;
         if (isNewTourist) {
             addLogEntry(`New tourist detected: ${data.id.substring(0, 8)}...`, 'info');
-        } else if (oldStatus !== data.status) {
-            addLogEntry(`Tourist ${data.id.substring(0, 8)}... is now ${data.status.toUpperCase()}.`, data.status === 'outside' || data.status === 'danger' ? 'error' : 'info');
-            if (data.status === 'danger') {
+        } else if (oldStatus !== data.status.status) {
+            addLogEntry(`Tourist ${data.id.substring(0, 8)}... is now ${data.status.status.toUpperCase()}.`, data.status.status === 'outside' || data.status.status === 'danger' ? 'error' : 'info');
+            if (data.status.status === 'danger') {
                 addAlert(data.id);
+                // Trigger AI guidance for danger zone
+                generateLLMResponse(data.status.name, data.status.threatLevel);
             }
         }
         
@@ -501,17 +594,17 @@
                     }
                 });
 
-                const currentIcon = data.status === 'outside' || data.status === 'danger' ? dangerIcon : touristIcon;
+                const currentIcon = data.status.status === 'outside' || data.status.status === 'danger' ? dangerIcon : touristIcon;
 
                 if (existingMarker) {
                     existingMarker.setLatLng(currentPosition);
                     existingMarker.setIcon(currentIcon);
-                    existingMarker.setPopupContent(`Tourist ID: ${data.id}<br>Status: ${data.status.toUpperCase()}`);
+                    existingMarker.setPopupContent(`Tourist ID: ${data.id}<br>Status: ${data.status.status.toUpperCase()}`);
                     existingMarker.getTooltip().setContent(data.id);
                 } else {
                     const marker = new L.marker(currentPosition, { icon: currentIcon }).addTo(adminMap);
                     marker.touristId = data.id;
-                    marker.bindPopup(`Tourist ID: ${data.id}<br>Status: ${data.status.toUpperCase()}`);
+                    marker.bindPopup(`Tourist ID: ${data.id}<br>Status: ${data.status.status.toUpperCase()}`);
                     marker.bindTooltip(data.id, { permanent: true, direction: 'top', className: 'tourist-id-label' }).openTooltip();
                 }
                 // FIXED: Use panTo to move the map without changing the zoom level
@@ -545,6 +638,8 @@
                     }
                 }
             });
+            // NEW: Update the tracking map with all tourist locations every interval
+            updateTrackingMap();
         }, 3000);
     }
 
@@ -581,9 +676,37 @@
 
             addLogEntry(`Displaying location for tourist: ${searchedTouristId}.`, 'info');
             updateTourist(touristData, true); // Update map
+            guidancePanel.classList.add('hidden'); // Hide guidance for new search
         } else {
             addLogEntry(`Tourist with ID '${searchedTouristId}' not found.`, 'error');
         }
+    }
+
+    // NEW: Function to update the tracking map with all tourist markers
+    function updateTrackingMap() {
+        if (!trackingMap || viewTracking.classList.contains('hidden')) {
+            return; // Don't update if the map isn't visible
+        }
+
+        // Clear existing markers
+        Object.values(trackingMarkers).forEach(marker => {
+            trackingMap.removeLayer(marker);
+        });
+        trackingMarkers = {};
+
+        Object.values(touristStatus).forEach(tourist => {
+            const isSafe = tourist.status.status === 'outside';
+            const icon = isSafe ? touristIcon : dangerIcon;
+            
+            const marker = L.marker([tourist.lat, tourist.lng], { icon: icon }).addTo(trackingMap);
+            marker.bindPopup(`
+                <b>Tourist ID:</b> ${tourist.id}<br>
+                <b>Status:</b> ${tourist.status.status.toUpperCase()}<br>
+                <b>Lat:</b> ${tourist.lat.toFixed(4)}<br>
+                <b>Lng:</b> ${tourist.lng.toFixed(4)}
+            `);
+            trackingMarkers[tourist.id] = marker;
+        });
     }
 
     function switchTab(tabName) {
@@ -594,6 +717,8 @@
             tabAdmin.classList.remove('bg-gray-800', 'text-gray-400');
             tabTracking.classList.add('bg-gray-800', 'text-gray-400');
             tabTracking.classList.remove('bg-slate-900', 'text-cyan-400', 'glow-border');
+            // Invalidate size to make map render correctly after being hidden
+            setTimeout(() => { adminMap.invalidateSize(); }, 300);
         } else {
             viewAdmin.classList.add('hidden');
             viewTracking.classList.remove('hidden');
@@ -601,12 +726,21 @@
             tabTracking.classList.remove('bg-gray-800', 'text-gray-400');
             tabAdmin.classList.add('bg-gray-800', 'text-gray-400');
             tabAdmin.classList.remove('bg-slate-900', 'text-cyan-400', 'glow-border');
+            // Invalidate size to make map render correctly after being hidden
+            setTimeout(() => { trackingMap.invalidateSize(); }, 300);
         }
     }
 
     window.onload = function() {
         setupAdminMap();
         loadZones();
+        
+        // NEW: Initialize the tracking map
+        trackingMap = L.map('tracking-map').setView([26.2006, 92.9376], 9);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(trackingMap);
+
         startRegularMonitoring();
 
         searchBtn.addEventListener('click', searchTourist);
