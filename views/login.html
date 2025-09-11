@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/public/login.css">
+    <link rel="icon" type="image/png" href="/public/images/favicon.png">
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <div class="login-container">
+        <a href="index.html" class="home-btn" title="Go to Home">
+            🏠
+        </a>
+        
+        <div class="form-toggle"> </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="form active">
+            <h2>Admin Login</h2>
+            <div class="input-group">
+                <input type="text" id="login-id" placeholder="User ID" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="submit-btn">Login</button>
+            <p class="message">Forgot your password? 
+                <a href="reset-password.html">Reset it here.</a>
+            </p>
+        </form>
+    </div>
+
+    <script src="/public/login.js"></script>
+</body>
+</html>

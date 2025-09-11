@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title> Home</title>
+    <link rel="icon" type="image/png" href="/public/images/favicon.png">
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/public/styles.css" />
+  </head>
+  <body>
+    <!-- Left Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+  <a href="#" class="logo">
+    <img src="/public/images/favicon.png" alt="TourSecure Logo" class="brand-logo">
+   <span>T</span>ourSecure</a>
+  </a>
+  <div class="close-btn" id="close-sidebar">
+    <i class="fas fa-times"></i>
+  </div>
+</div>
+      <ul class="sidebar-menu">
+          <li><a href="#about"><i class="fas fa-home"></i> Home</a></li>
+          <li><a href="login.html"><i class="fas fa-tachometer-alt"></i> Admin Login</a></li>
+          <li><a href="tracking.html"><i class="fas fa-bell"></i> Alerts & Logging System</a></li>
+          <li><a href="geofencing.html"><i class="fas fa-bell"></i> Geo-Fencing Alerts</a></li>
+          <li><a href="verification.html"><i class="fas fa-id-card"></i> ID Verification</a></li>
+          <li><a href="#price"><i class="fas fa-tags"></i> Prices</a></li>
+          <li><a href="#footer"><i class="fas fa-info-circle"></i> About Us</a></li>
+      </ul>
+      
+      <!-- Mobile App Section in Sidebar -->
+      <div class="sidebar-mobile-app">
+        <h4>Get Our Mobile App</h4>
+        <div class="sidebar-app-buttons">
+          <a href="#" class="sidebar-app-btn">
+            <i class="fab fa-android"></i>
+            Android
+          </a>
+          <a href="#" class="sidebar-app-btn">
+            <i class="fab fa-apple"></i>
+            iOS
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Menu toggle button -->
+    <div class="menu-toggle" id="menu-toggle">
+      <i class="fas fa-bars"></i>
+    </div>
+    
+    <!-- Top-right Login Button -->
+   <header class="header">
+  <a href="login.html" class="login-btn">
+    <img src="/public/images/user.png" alt="User" style="width:15px; height:18px; border-radius:50%;">
+  </a>
+</header>
+
+    <!-- Main content wrapper -->
+    <div class="main-content">
+      <!--Header section ends-->
+      <section class="about" id="about">
+        <h1 class="heading">
+  <img src="/public/images/favicon.png" alt="TourSecure Logo" class="brand-logo">
+  <span>Tour</span> Secure
+</h1>
+        <div class="top1">
+          <div class="top2">
+            <h3>Your Safety, Our Priority: A Smart System for Tourists</h3>
+          </div>
+        </div>
+      </section>
+
+      <!--scaled up bento grid starts here-->
+      
+
+      <!--scaled up bento grid ends here-->
+
+      <!--About section starts-->
+      <section class="about" id="about">
+        <div class="row">
+          <div class="image">
+          <!-- Swiper Carousel -->
+<div class="image">
+  <div class="image-box swiper mySwiper">
+    <div class="swiper-wrapper">
+      <!-- Slide 1 -->
+      <div class="swiper-slide">
+        <img src="/public/images/overviewbg.png" alt="TourSecure system representation" />
+        
+      </div>
+      <!-- Slide 2 -->
+      <div class="swiper-slide">
+        <img src="/public/images/safety.jpg" alt="Tourist Safety" />
+      </div>
+      <!-- Slide 3 -->
+      <div class="swiper-slide">
+        <img src="/public/images/dashboard.jpg" alt="Dashboard" />
+      </div>
+      <!-- Slide 4 -->
+      <div class="swiper-slide">
+        <img src="/public/images/emergency.png" alt="Emergency Response" />
+      </div>
+    </div>
+
+    <!-- Pagination dots -->
+    <div class="swiper-pagination"></div>
+  </div>
+</div>
+
+
+
+</div>
+
+          <div class="content">
+            <h3>A Robust Digital Ecosystem for Tourist Safety</h3>
+            <p>TourSecure is a Smart Tourist Safety Monitoring & Incident Response System is designed to create a secure, technology-driven environment for visitors in high-risk and remote areas. By leveraging a combination of AI, Blockchain, and Geo-Fencing, we provide real-time monitoring and rapid response capabilities to ensure a safe travel experience.</p>
+            <p>The system comprises a secure digital ID platform, a user-friendly mobile application for tourists, and a real-time dashboard for authorities. Our solution aims to bridge the gap between traditional policing methods and the dynamic needs of modern tourism, ensuring peace of mind for both travelers and law enforcement.</p>
+            <a href="#footer" class="btn">contact us</a>
+          </div>
+        </div>
+      </section>
+
+      <!--About section ends-->
+
+      <!--Features section starts -->
+      <section class="features" id="features">
+        <h1 class="heading">Key <span>Features</span></h1>
+        <div class="box-container">
+          <div class="box">
+            <i class="fas fa-id-card-alt"></i>
+            <h3>Digital Tourist ID</h3>
+            <p>A secure, blockchain-based system that issues unique digital IDs to tourists. These IDs contain verified KYC, itinerary, and emergency contacts, and are valid for the duration of the visit.</p>
+          </div>
+          <div class="box">
+            <i class="fas fa-map-pin"></i>
+            <h3>Geo-Fencing Alerts</h3>
+            <p>Receive automatic alerts when you enter a high-risk or restricted zone. This feature provides an extra layer of safety, guiding you through unfamiliar territories.</p>
+          </div>
+          <div class="box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Panic Button</h3>
+            <p>In case of an emergency, a single tap on the panic button shares your live location with the nearest police unit and your emergency contacts, ensuring a swift response.</p>
+          </div>
+          <div class="box">
+            <i class="fas fa-robot"></i>
+            <h3>AI Anomaly Detection</h3>
+            <p>Our AI models detect unusual behavior such as sudden location drop-offs or prolonged inactivity. This helps authorities proactively identify and respond to potential distress situations.</p>
+          </div>
+          <div class="box">
+            <i class="fas fa-tachometer-alt"></i>
+            <h3>Authority Dashboard</h3>
+            <p>A real-time dashboard provides authorities with visual heat maps of tourist clusters, access to digital IDs, and automated E-FIR generation for missing person cases.</p>
+          </div>
+        </div>
+      </section>
+
+
+<!--Price section starts here-->
+
+    <section class="price" id="price">
+      <h1 class="heading">our <span>price</span></h1>
+      <div class="box-container">
+        <div class="box">
+          <h3 class="title">Trial</h3>
+          <h3 class="amount">Rs.0</h3>
+          <ul>
+            <li><i class="fas fa-check"></i>free </li>
+            <li><i class="fas fa-check"></i>detects biasness</li>
+            <li><i class="fas fa-check"></i>no review</li>
+            <li><i class="fas fa-check"></i>no suggestions</li>
+            <li><i class="fas fa-check"></i>not programmable</li>
+          </ul>
+          <a href="login.html" class="btn">Start</a>
+        </div>
+
+        <div class="box">
+          <h3 class="title">for 1 month</h3>
+          <h3 class="amount">Rs.299/-</h3>
+          <ul>
+            <li><i class="fas fa-check"></i>full services</li>
+            <li><i class="fas fa-check"></i>gives personal review</li>
+            <li><i class="fas fa-check"></i>gives suggestions and feedbacks</li>
+            <li><i class="fas fa-check"></i>implements AI</li>
+            <li><i class="fas fa-check"></i>embedded chatbot</li>
+          </ul>
+          <a href="payment.html" class="btn">Check out</a>
+        </div>
+
+        <div class="box">
+          <h3 class="title">for 3 months</h3>
+          <h3 class="amount">Rs.499/-</h3>
+          <ul>
+            <li><i class="fas fa-check"></i>full services</li>
+            <li><i class="fas fa-check"></i>gives personal review</li>
+            <li><i class="fas fa-check"></i>gives suggestions and feedbacks</li>
+            <li><i class="fas fa-check"></i>implements AI</li>
+            <li><i class="fas fa-check"></i>embedded chatbot</li>
+          </ul>
+          <a href="payment.html" class="btn">Check out</a>
+        </div>
+
+        <div class="box">
+          <h3 class="title">for 1 year</h3>
+          <h3 class="amount">Rs.899/-</h3>
+          <ul>
+           <li><i class="fas fa-check"></i>full services</li>
+            <li><i class="fas fa-check"></i>gives personal review</li>
+            <li><i class="fas fa-check"></i>gives suggestions and feedbacks</li>
+            <li><i class="fas fa-check"></i>implements AI</li>
+            <li><i class="fas fa-check"></i>embedded chatbot</li>
+          </ul>
+          <a href="payment.html" class="btn">Check out</a>
+        </div>
+      </div>
+    </section>
+
+    <!--Price section ends here-->
+      <!--Features section ends -->
+
+      <!-- Mobile App Download Section -->
+      <section class="mobile-app-section">
+        <h2>Get Our Mobile App</h2>
+        <div class="app-buttons-container">
+          <a href="#" class="app-store-btn">
+            <i class="fab fa-apple"></i>
+            Download on the App Store
+          </a>
+          <a href="#" class="app-store-btn">
+            <i class="fab fa-google-play"></i>
+            Get it on Google Play
+          </a>
+        </div>
+      </section>
+
+      <!--footer section starts -->
+      <section class="footer" id="footer">
+        <div class="box-container">
+          <div class="box">
+            <h3>Branches</h3>
+            <a href="#">New Delhi</a>
+            <a href="#">Noida</a>
+            <a href="#">Ghaziabad</a>
+            <a href="#">Gurugram</a>
+          </div>
+
+          <div class="box">
+            <h3>Quick links</h3>
+            <a href="#about">Home</a>
+            <a href="#features">Features</a>
+            <a href="#footer">About</a>
+            <a href="#footer">Contact</a>
+          </div>
+
+          <div class="box">
+            <h3>contact info</h3>
+            <a href="#">+91-9650606311</a>
+            <a href="#">+91-9456321278</a>
+            <a href="#">info@toursecure.com</a>
+            <a href="#">support@toursecure.com</a>
+          </div>
+
+          <div class="box">
+            <h3>follow us</h3>
+            <a href="#"><i class="fab fa-facebook-f"></i>facebook</a>
+            <a href="#"><i class="fab fa-twitter"></i>twitter</a>
+            <a href="#"><i class="fab fa-instagram"></i>instagram</a>
+            <a href="#"><i class="fab fa-linkedin"></i>linkedin</a>
+          </div>
+        </div>
+        <div class="credit">
+            All Rights Reserved &copy; 2025 TourSecure
+        </div>
+      </section>
+
+      <!--footer section ends-->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="/public/script.js"></script>
+    <script>
+    var swiper = new Swiper(".mySwiper", {
+    loop: true, // infinite loop
+    autoplay: {
+      delay: 3000, // 3 sec per slide
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+  });
+</script>
+
+
+
+
+<!-- Add this HTML code to your index.html file, just before the closing </body> tag -->
+
+<!-- AI Chatbot -->
+<div class="chatbot-toggle" id="chatbotToggle">
+    <i class="fas fa-comments" id="chatbotIcon"></i>
+</div>
+
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chatbot-header">
+        <h3>TourSecure Chatbot</h3>
+        <p class="status">Online • Ready to help</p>
+        <button class="chatbot-close" id="chatbotClose">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="chatbot-messages" id="chatbotMessages">
+        <div class="message bot">
+            <div class="message-content">
+                Hello! I'm your TourSecure Chatbot. How can I help you?
+            </div>
+            <div class="message-time" id="welcomeTime"></div>
+            <div class="quick-replies">
+                <button class="quick-reply" onclick="sendQuickReply('What is TourSecure?')">What is TourSecure?</button>
+                <button class="quick-reply" onclick="sendQuickReply('How does the panic button work?')">Panic Button</button>
+                <button class="quick-reply" onclick="sendQuickReply('Tell me about pricing')">Pricing</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chatbot-input">
+        <input type="text" id="chatbotInput" placeholder="Type your message..." maxlength="500">
+        <button class="send-btn" id="sendBtn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+
+
+
+  </body>
+</html>

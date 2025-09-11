@@ -1,0 +1,66 @@
+/* Additional styles for reset page - add to your login.css or create as separate file */
+
+/* Message box styling for success/error messages */
+.message-box {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-size: 1.4rem;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.success-message {
+    background: rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.4);
+    color: #667eea;
+}
+
+.error-message {
+    background: rgba(231, 60, 126, 0.2);
+    border: 1px solid rgba(231, 60, 126, 0.4);
+    color: #e73c7e;
+}
+
+/* Date input specific styling */
+.input-group input[type="date"] {
+    color-scheme: dark;
+}
+
+.input-group input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Loading state for submit button */
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.submit-btn.loading {
+    position: relative;
+}
+
+.submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: button-loading-spinner 1s ease infinite;
+}
+
+@keyframes button-loading-spinner {
+    from {
+        transform: rotate(0turn);
+    }
+    to {
+        transform: rotate(1turn);
+    }
+}
