@@ -88,37 +88,19 @@ animate();
 
 // Login Form Logic
 document.addEventListener('DOMContentLoaded', () => {
-    const loginToggle = document.getElementById('login-toggle');
-    const signupToggle = document.getElementById('signup-toggle');
     const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-
-    loginToggle.addEventListener('click', () => {
-        loginToggle.classList.add('active');
-        signupToggle.classList.remove('active');
-        loginForm.classList.add('active');
-        signupForm.classList.remove('active');
-    });
-
-    signupToggle.addEventListener('click', () => {
-        signupToggle.classList.add('active');
-        loginToggle.classList.remove('active');
-        signupForm.classList.add('active');
-        loginForm.classList.remove('active');
-    });
 
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const loginId = document.getElementById('login-id').value;
         const loginPassword = document.getElementById('login-password').value;
-        alert(`Logging in with ID: ${loginId} and Password: ${loginPassword}`);
-    });
-
-    signupForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const signupId = document.getElementById('signup-id').value;
-        const signupDob = document.getElementById('signup-dob').value;
-        const signupPassword = document.getElementById('signup-password').value;
-        alert(`Signing up with ID: ${signupId}, DOB: ${signupDob}, and Password: ${signupPassword}`);
+        
+        // Check demo credentials
+        if (loginId === 'admin' && loginPassword === 'password123') {
+            // Redirect to dashboard
+            window.location.href = 'dashboard.html';
+        } else {
+            alert('Invalid credentials! Please use:\nUser ID: admin\nPassword: password123');
+        }
     });
 });
