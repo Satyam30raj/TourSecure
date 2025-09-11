@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Police Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/public/dashboard.css">
+    <link rel="icon" type="image/png" href="/public/images/favicon.png">
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    
+    <!-- Dashboard Page -->
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Tourism Department & Police Dashboard</h1>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Real-time Tourist Clusters -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-users card-icon"></i>
+                    <h3 class="card-title">Tourist Clusters</h3>
+                </div>
+                <div class="cluster-visualization">
+                    <div class="cluster cluster-1">25</div>
+                    <div class="cluster cluster-2">18</div>
+                    <div class="cluster cluster-3">32</div>
+                    <div class="cluster cluster-4">14</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">89</div>
+                        <div class="stat-label">Total Tourists</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">Active Zones</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- High-Risk Zone Heat Map -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-map-marked-alt card-icon"></i>
+                    <h3 class="card-title">High-Risk Zone Heat Map</h3>
+                </div>
+                <div class="heatmap-container">
+                    <div class="heatmap-overlay"></div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">7</div>
+                        <div class="stat-label">Risk Zones</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">Medium</div>
+                        <div class="stat-label">Threat Level</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Digital ID Records -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-id-card card-icon"></i>
+                    <h3 class="card-title">Digital ID Records</h3>
+                </div>
+                <div class="record-item">
+                    <div class="record-header">
+                        <span class="record-id">ID: TUR-2024-001</span>
+                        <span class="record-status status-active">Active</span>
+                    </div>
+                    <div>John Doe - Location: Red Fort</div>
+                    <div style="color: #aaa; font-size: 1.2rem;">Last seen: 10 mins ago</div>
+                </div>
+                <div class="record-item">
+                    <div class="record-header">
+                        <span class="record-id">ID: TUR-2024-002</span>
+                        <span class="record-status status-missing">Missing</span>
+                    </div>
+                    <div>Sarah Smith - Last Location: India Gate</div>
+                    <div style="color: #aaa; font-size: 1.2rem;">Last seen: 2 hours ago</div>
+                </div>
+                <div class="record-item">
+                    <div class="record-header">
+                        <span class="record-id">ID: TUR-2024-003</span>
+                        <span class="record-status status-active">Active</span>
+                    </div>
+                    <div>Mike Johnson - Location: Qutub Minar</div>
+                    <div style="color: #aaa; font-size: 1.2rem;">Last seen: 5 mins ago</div>
+                </div>
+            </div>
+
+            <!-- Alert History -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-exclamation-triangle card-icon"></i>
+                    <h3 class="card-title">Alert History</h3>
+                </div>
+                <div class="alert-item">
+                    <i class="fas fa-user-times alert-icon"></i>
+                    <div class="alert-text">
+                        <div>Tourist reported missing</div>
+                        <div class="alert-time">2 hours ago</div>
+                    </div>
+                </div>
+                <div class="alert-item">
+                    <i class="fas fa-map-pin alert-icon"></i>
+                    <div class="alert-text">
+                        <div>High crowd density detected</div>
+                        <div class="alert-time">4 hours ago</div>
+                    </div>
+                </div>
+                <div class="alert-item">
+                    <i class="fas fa-shield-alt alert-icon"></i>
+                    <div class="alert-text">
+                        <div>Security breach in Zone 3</div>
+                        <div class="alert-time">6 hours ago</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- E-FIR Generation -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-file-alt card-icon"></i>
+                    <h3 class="card-title">E-FIR Generation</h3>
+                </div>
+                <p>Generate automated E-FIR for missing person cases</p>
+                <button id="show-efir-btn" class="show-efir-btn">Generate E-FIR</button>
+                
+                <div id="efir-form" class="efir-form">
+                    <input type="text" class="efir-input" placeholder="Missing Person Name" required>
+                    <input type="text" class="efir-input" placeholder="Last Known Location" required>
+                    <input type="text" class="efir-input" placeholder="Description" required>
+                    <input type="text" class="efir-input" placeholder="Contact Information" required>
+                    <button class="generate-btn">Generate E-FIR</button>
+                </div>
+            </div>
+
+            <!-- Last Known Locations -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <i class="fas fa-map-marker-alt card-icon"></i>
+                    <h3 class="card-title">Last Known Locations</h3>
+                </div>
+                <div class="location-item">
+                    <div class="location-header">
+                        <span class="location-name">Red Fort Area</span>
+                        <span class="location-time">5 mins ago</span>
+                    </div>
+                    <div class="location-details">3 tourists tracked</div>
+                </div>
+                <div class="location-item">
+                    <div class="location-header">
+                        <span class="location-name">India Gate</span>
+                        <span class="location-time">15 mins ago</span>
+                    </div>
+                    <div class="location-details">8 tourists tracked</div>
+                </div>
+                <div class="location-item">
+                    <div class="location-header">
+                        <span class="location-name">Qutub Minar</span>
+                        <span class="location-time">30 mins ago</span>
+                    </div>
+                    <div class="location-details">5 tourists tracked</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/public/dashboard.js"></script>
+</body>
+</html>
